@@ -1,228 +1,35 @@
-<!DOCTYPE html>
-<head>
-	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<title>Hello, AR Cube!</title>
-	<script src='three.js'></script>
-	<script src="artoolkit.min.js"></script>
-	<script src="artoolkit.api.js"></script>
-	<script src="threex-artoolkitsource.js"></script>
-	<script src="threex-artoolkitcontext.js"></script>
-	<script src="threex-arbasecontrols.js"></script>
-	<script src="threex-armarkercontrols.js"></script>
-	<script src="threex-arsmoothedcontrols.js"></script>
-	<script src="keyboard.js"></script>
-</head>
+<!-- include a-frame -->
+<script src="./aframe.js"></script>
+<!-- include ar.js for aframe -->
+<script src='./aframe-ar.js'></script>
+<script>ARjs.Context.baseURL = '../../../three.js/'</script>
+<!-- include aframe-portal-door -->
+<script src='src/aframe-portal-door.js'></script>
+<script src='src/threex-portal-door.js'></script>
 
-<body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
+<!-- start the body of your page -->
+<body style='margin : 0px; overflow: hidden;'>
+	<!-- add some info at the top of the page -->
+	<div style='position: fixed; top: 10px; width:100%; text-align: center; z-index: 1;'>
+		<a href="https://github.com/jeromeetienne/AR.js/" target="_blank">AR.js</a> - Two-ways Portal 360 for a-frame by <a href='https://twitter.com/jerome_etienne' target='_blank'>@jerome_etienne</a>
+	</div>
 
+	<!-- Define your 3d scene and enabled ar.js -->
+	<a-scene embedded arjs='trackingMethod: best;'>
 
-<script>
+		<!-- Create a anchor to attach your augmented reality -->
+		<a-anchor hit-testing-enabled='true'>
 
-var scene, camera, renderer, clock, deltaTime, totalTime;
+			<!-- portal 360 with an image -->
+			<!-- <a-portal-door url='images/360_topaz.png' position='0 0 0' scale='1 1 1' rotation='0 90 0'><a-portal-door> -->
 
-var arToolkitSource, arToolkitContext, smoothedControls;
+			<!-- portal 360 with an video -->
+			<!-- <a-portal-door url='videos/pano.webm' position='0 0 0' scale='2 2 2' rotation='0 90 0'><a-portal-door> -->
+			<a-portal-door url='videos/aframe-city-360.mp4' position='0 0 0' scale='2 2 2' rotation='0 90 0'><a-portal-door>
 
-var markerRoot1, markerRoot2;
+		</a-anchor>
 
-var portal, portalMaterial;
-
-initialize();
-animate();
-
-function initialize()
-{
-	scene = new THREE.Scene();
-
-	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
-	scene.add( ambientLight );
-				
-	camera = new THREE.Camera();
-	scene.add(camera);
-
-	renderer = new THREE.WebGLRenderer({
-		antialias : true,
-		alpha: true
-	});
-	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
-	renderer.setSize( 640, 480 );
-	renderer.domElement.style.position = 'absolute'
-	renderer.domElement.style.top = '0px'
-	renderer.domElement.style.left = '0px'
-	document.body.appendChild( renderer.domElement );
-
-	clock = new THREE.Clock();
-	deltaTime = 0;
-	totalTime = 0;
-
-	arToolkitSource = new THREEx.ArToolkitSource({
-		sourceType : 'webcam',
-	});
-
-	function onResize()
-	{
-		arToolkitSource.onResize()	
-		arToolkitSource.copySizeTo(renderer.domElement)	
-		if ( arToolkitContext.arController !== null )
-		{
-			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
-		}	
-	}
-
-	arToolkitSource.init(function onReady(){
-		onResize()
-	});
-	
-	window.addEventListener('resize', function(){
-		onResize()
-	});
-
-	arToolkitContext = new THREEx.ArToolkitContext({
-		cameraParametersUrl: 'camera_para.dat',
-		detectionMode: 'mono'
-	});
-	
-	// copy projection matrix to camera when initialization complete
-	arToolkitContext.init( function onCompleted(){
-		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
-	});
-
-	kanjiMarker = new THREE.Group();
-	scene.add(kanjiMarker);
-	
-	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, kanjiMarker, {
-		type : 'pattern',
-		patternUrl : "hiro.patt",
-	})
-
-	let smoothedRoot = new THREE.Group();
-	scene.add(smoothedRoot);
-	smoothedControls = new THREEx.ArSmoothedControls(smoothedRoot, {
-		lerpPosition: 0.5,
-		lerpQuaternion: 0.5,
-		lerpScale: 1,
-		});
-
-
-	let loader = new THREE.TextureLoader();
-	
-	let defaultMaterial = new THREE.MeshBasicMaterial({
-		map: loader.load("sphere-colored.png"), 
-		color: 0x444444,
-		side: THREE.DoubleSide,
-		transparent: true,
-		opacity: 0.6
-	});
-	
-	let portalWidth = 2;
-	let portalHeight = 4;
-	let portalBorder = 0.1;
-	
-	portal = new THREE.Mesh(
-		new THREE.PlaneGeometry(portalWidth, portalHeight),
-		defaultMaterial
-	);
-	portal.position.y = portalHeight/2 + portalBorder;
-	portal.layers.set(1);
-	smoothedRoot.add(portal);
-	
-	camera.layers.enable(1);
-	
-	portalMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide, transparent:true, opacity: 0.75 });
-	
-	
-	let portalBorderMesh = new THREE.Mesh(
-		new THREE.PlaneGeometry(portalWidth + 2*portalBorder, portalHeight + 2*portalBorder),
-		portalMaterial
-	);
-	portalBorderMesh.position.y = portal.position.y;
-	portalBorderMesh.layers.set(0);
-	smoothedRoot.add(portalBorderMesh);
-	
-	let skyMaterialArray = [
-		new THREE.MeshBasicMaterial( { map: loader.load("1.jpg"), side: THREE.BackSide } ),
-		new THREE.MeshBasicMaterial( { map: loader.load("2.jpg"), side: THREE.BackSide } ),
-		new THREE.MeshBasicMaterial( { map: loader.load("3.jpg"), side: THREE.BackSide } ),
-		new THREE.MeshBasicMaterial( { map: loader.load("4.jpg"), side: THREE.BackSide } ),
-		new THREE.MeshBasicMaterial( { map: loader.load("5.jpg"), side: THREE.BackSide } ),
-		new THREE.MeshBasicMaterial( { map: loader.load("6.jpg"), side: THREE.BackSide } ),
-	];
-	let skyMesh = new THREE.Mesh(
-		new THREE.CubeGeometry(30,30,30),
-		skyMaterialArray );
-	skyMesh.layers.set(2);
-	smoothedRoot.add(skyMesh);
-
-}
-
-
-function update()
-{
-	portalMaterial.color.setHSL( totalTime/10 % 0, 0, 0 );
-	
-	if ( arToolkitSource.ready !== false )
-		arToolkitContext.update( arToolkitSource.domElement );
-		
-	smoothedControls.update(kanjiMarker);
-
-}
-
-
-function render()
-{
-
-
-	let gl = renderer.context;
-	
-	
-	renderer.clear(true,true,true);
-	
-	renderer.autoClear = false;
-		
-	gl.enable(gl.STENCIL_TEST);
-	
-	camera.layers.set(1); 
-
-	gl.stencilFunc(gl.ALWAYS, 1, 0xff);
-	gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-	gl.stencilMask(0xff);
-
-	gl.colorMask(false,false,false,false);
-	gl.depthMask(false);
-	
-	renderer.render( scene, camera );
-
-	
-	gl.colorMask(true,true,true,true);
-	gl.depthMask(true);
-	
-	gl.stencilFunc(gl.EQUAL, 1, 0xff);
-	gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-	
-	camera.layers.set(2);
-	renderer.render( scene, camera );
-	
-
-	gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);
-	gl.colorMask(true,true,true,true);
-	gl.depthMask(true);
-	
-	camera.layers.set(0); 
-	renderer.render( scene, camera );
-
-	renderer.autoClear = true;
-}
-
-
-
-function animate()
-{
-	requestAnimationFrame(animate);
-	deltaTime = clock.getDelta();
-	totalTime += deltaTime;
-	update();
-
-	render();
-}
-</script>
+		<!-- Define a static camera -->
+		<a-camera-static/>
+	</a-scene>
 </body>
-</html>
