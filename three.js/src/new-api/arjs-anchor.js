@@ -6,7 +6,7 @@ var ARjs = ARjs || {}
 
 /**
  * Create an anchor in the real world
- *
+ * 
  * @param {ARjs.Session} arSession - the session on which we create the anchor
  * @param {Object} markerParameters - parameter of this anchor
  */
@@ -15,12 +15,13 @@ ARjs.Anchor = function(arSession, markerParameters){
 	var arContext = arSession.arContext
 	var scene = arSession.parameters.scene
 	var camera = arSession.parameters.camera
-
+	
 	this.arSession = arSession
 	this.parameters = markerParameters
-
+	
 	// log to debug
 	console.log('ARjs.Anchor -', 'changeMatrixMode:', this.parameters.changeMatrixMode, '/ markersAreaEnabled:', markerParameters.markersAreaEnabled)
+
 
 	var markerRoot = new THREE.Group
 	scene.add(markerRoot)
@@ -33,30 +34,15 @@ ARjs.Anchor = function(arSession, markerParameters){
 	}else console.assert(false)
 
 	if( markerParameters.markersAreaEnabled === false ){
-		var markerControls = new THREEx.ArMarkerControls(arContext, controlledObject, markerParameters)
-		this.controls = markerControls
+		var markerControls = new THREEx.ArMarkerControls(arContext, controlledObject, markerParameters)		
 	}else{
 		// sanity check - MUST be a trackingBackend with markers
 		console.assert( arContext.parameters.trackingBackend === 'artoolkit' || arContext.parameters.trackingBackend === 'aruco' )
-
-		// honor markers-page-resolution for https://webxr.io/augmented-website
-		if( location.hash.substring(1).startsWith('markers-page-resolution=') === true ){
-			// get resolutionW/resolutionH from url
-			var markerPageResolution = location.hash.substring(1)
-			var matches = markerPageResolution.match(/markers-page-resolution=(\d+)x(\d+)/)
-			console.assert(matches.length === 3)
-			var resolutionW = parseInt(matches[1])
-			var resolutionH = parseInt(matches[2])
-			var arContext = arSession.arContext
-			// generate and store the ARjsMultiMarkerFile
-			ARjs.MarkersAreaUtils.storeMarkersAreaFileFromResolution(arContext.parameters.trackingBackend, resolutionW, resolutionH)
-		}
-
-		// if there is no ARjsMultiMarkerFile, build a default one
+		// for multi marker
 		if( localStorage.getItem('ARjsMultiMarkerFile') === null ){
 			ARjs.MarkersAreaUtils.storeDefaultMultiMarkerFile(arContext.parameters.trackingBackend)
 		}
-
+		
 		// get multiMarkerFile from localStorage
 		console.assert( localStorage.getItem('ARjsMultiMarkerFile') !== null )
 		var multiMarkerFile = localStorage.getItem('ARjsMultiMarkerFile')
@@ -67,23 +53,21 @@ ARjs.Anchor = function(arSession, markerParameters){
 		}else if( markerParameters.changeMatrixMode === 'cameraTransformMatrix' ){
 			var parent3D = camera
 		}else console.assert(false)
-
+	
 		// build a multiMarkerControls
 		var multiMarkerControls = ARjs.MarkersAreaControls.fromJSON(arContext, parent3D, controlledObject, multiMarkerFile)
-		this.controls = multiMarkerControls
-
+		
 		// honor markerParameters.changeMatrixMode
 		multiMarkerControls.parameters.changeMatrixMode = markerParameters.changeMatrixMode
 
-// TODO put subMarkerControls visibility into an external file. with 2 handling for three.js and babylon.js
-		// create ArMarkerHelper - useful to debug - super three.js specific
+		// create ArMarkerHelper - useful to debug
 		var markerHelpers = []
 		multiMarkerControls.subMarkersControls.forEach(function(subMarkerControls){
 			// add an helper to visuable each sub-marker
 			var markerHelper = new THREEx.ArMarkerHelper(subMarkerControls)
 			markerHelper.object3d.visible = false
-			// subMarkerControls.object3d.add( markerHelper.object3d )
-			subMarkerControls.object3d.add( markerHelper.object3d )
+			// subMarkerControls.object3d.add( markerHelper.object3d )		
+			subMarkerControls.object3d.add( markerHelper.object3d )		
 			// add it to markerHelpers
 			markerHelpers.push(markerHelper)
 		})
@@ -95,21 +79,22 @@ ARjs.Anchor = function(arSession, markerParameters){
 			})
 		}
 	}
-
+	
 	this.object3d = new THREE.Group()
-
+		
 	//////////////////////////////////////////////////////////////////////////////
 	//		THREEx.ArSmoothedControls
 	//////////////////////////////////////////////////////////////////////////////
-
+	
 	var shouldBeSmoothed = true
+	if( arContext.parameters.trackingBackend === 'tango' ) shouldBeSmoothed = false 
 
 	if( shouldBeSmoothed === true ){
 		// build a smoothedControls
 		var smoothedRoot = new THREE.Group()
 		scene.add(smoothedRoot)
 		var smoothedControls = new THREEx.ArSmoothedControls(smoothedRoot)
-		smoothedRoot.add(this.object3d)
+		smoothedRoot.add(this.object3d)	
 	}else{
 		markerRoot.add(this.object3d)
 	}
@@ -118,7 +103,7 @@ ARjs.Anchor = function(arSession, markerParameters){
 	//////////////////////////////////////////////////////////////////////////////
 	//		Code Separator
 	//////////////////////////////////////////////////////////////////////////////
-	this.update = function(){
+	this.update = function(){	
 		// update _this.object3d.visible
 		_this.object3d.visible = _this.object3d.parent.visible
 
@@ -130,7 +115,23 @@ ARjs.Anchor = function(arSession, markerParameters){
 			}
 
 			// update smoothedControls
-			smoothedControls.update(markerRoot)
+			smoothedControls.update(markerRoot)			
 		}
 	}
+}
+
+
+/**
+ * Apply ARjs.Session.HitTestResult to the controlled object3d
+ * 
+ * @param {ARjs.HitTesting.Result} hitTestResult - the result to apply
+ */
+ARjs.Anchor.prototype.applyHitTestResult = function(hitTestResult){
+	console.warn('obsolete anchro.applyHitTestResult - use hitTestResult.apply(object3d) instead')
+	hitTestResult.apply(this.object3d)
+	// object3d.position.copy(hitTestResult.position)
+	// object3d.quaternion.copy(hitTestResult.quaternion)
+	// object3d.scale.copy(hitTestResult.scale)
+	// 
+	// object3d.updateMatrix()
 }
