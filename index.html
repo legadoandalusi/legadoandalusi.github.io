@@ -1,5 +1,5 @@
-<script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/examples/vendor/aframe/build/aframe.min.js"></script>
-<script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/build/aframe-ar.js"></script>
+<script src="./vendor/aframe/build/aframe.min.js"></script>
+<script src="./build/aframe-ar.js"></script>
 <script>
   AFRAME.registerComponent('arjs-portal-door', {
 	schema: {
@@ -302,7 +302,7 @@ THREEx.Portal360.prototype.update = function () {
 <body style='margin : 0px; overflow: hidden;'>
   <a-scene embedded arjs='trackingMethod: best;'>
   <a-assets>
-    <video src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.1/aframe/examples/demo-portal-door/videos/aframe-city-360.mp4"></video>
+    <video src="videos/aframe-city-360.mp4"></video>
   </a-assets>
 		<!-- Create a anchor to attach your augmented reality -->
 		<a-anchor hit-testing-enabled='true'>
@@ -312,7 +312,7 @@ THREEx.Portal360.prototype.update = function () {
 
 			<!-- portal 360 with an video -->
 			<!-- <a-portal-door url='videos/pano.webm' position='0 0 0' scale='2 2 2' rotation='0 90 0'><a-portal-door> -->
-			<a-portal-door url='https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.1/aframe/examples/demo-portal-door/videos/aframe-city-360.mp4' position='0 0 0' scale='2 2 2' rotation='0 90 0'><a-portal-door>
+			<a-portal-door url='videos/aframe-city-360.mp4' position='0 0 0' scale='2 2 2' rotation='0 90 0'><a-portal-door>
 
 		</a-anchor>
 
