@@ -11,13 +11,13 @@
     <a-scene mindar-image="imageTargetSrc: targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       <a-assets>
         <img id="card" src="alhambra_alpha.png"/>
-        <video autoplay loop muted playsinline webkit-playsinline type="video/mp4" id="alhambraModel" preload="auto" src="alhambra_chroma.mp4" crossOrigin="anonymous"></video>
+        <video type="video/mp4" id="alhambraModel" preload="auto" src="alhambra_chroma_small.mp4" autoplay="true" loop="true" crossorigin="anonymous" playsinline="" webkit-playsinline="" muted="true"></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-         <a-video autoplay loop muted playsinline webkit-playsinline type="video/mp4" src="alhambra_chroma.mp4" position="0 0 0" rotation="0 0 0" height="0.2840" width="1" preload="auto" autoplay="true" loop="true"></a-video>
+        <a-video autoplay loop muted playsinline webkit-playsinline type="video/mp4" src="alhambra_chroma_small.mp4" position="0 0 0" rotation="0 0 0" height="0.2840" width="1" preload="auto" autoplay="true" loop="true"></a-video>
         <!--<a-video autoplay loop muted playsinline webkit-playsinline src="#alhambraModel" position="0 0 0" height="0.2840" width="1" rotation="0 0 0" preload="auto" autoplay="true" loop="true"> </a-video>-->
       </a-entity>
     </a-scene>
