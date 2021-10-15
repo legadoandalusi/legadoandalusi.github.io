@@ -121,6 +121,7 @@
         init: function () {
           this.el.addEventListener('targetFound', event => {
             console.log("target found");
+            testVideo.play();
             showAvatar(() => {
               setTimeout(() => {
                 showPortfolio(() => {
@@ -132,12 +133,14 @@
             });
           });
           this.el.addEventListener('targetLost', event => {
+            testVideo.pause();
             console.log("target found");
           });
           //this.el.emit('targetFound');
         }
       });
-    </script>
+
+</script>
 
     <style>
       body {

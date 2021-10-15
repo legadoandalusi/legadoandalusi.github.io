@@ -6,8 +6,79 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.0.0/dist/mindar-image-aframe.prod.js"></script>
-  </head>
-  <body>
+    
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+    const sceneEl = document.querySelector('a-scene');
+    const arSystem = sceneEl.systems["mindar-image-system"];
+    const exampleTarget = document.querySelector('#example-target');
+    const examplePlane = document.querySelector('#example-plane');
+
+    const startButton = document.querySelector("#example-start-button");
+    const stopButton = document.querySelector("#example-stop-button");
+    const pauseButton = document.querySelector("#example-pause-button");
+    const pauseKeepVideoButton = document.querySelector("#example-pause-keep-video-button");
+    const unpauseButton = document.querySelector("#example-unpause-button");
+
+    startButton.addEventListener('click', () => {
+      console.log("start");
+      arSystem.start(); // start AR 
+    });
+    stopButton.addEventListener('click', () => {
+      arSystem.stop(); // stop AR 
+    });
+    pauseButton.addEventListener('click', () => {
+      arSystem.pause(); // pause AR, keep video feed
+    });
+    pauseKeepVideoButton.addEventListener('click', () => {
+      arSystem.pause(true); // pause AR and video
+    });
+    unpauseButton.addEventListener('click', () => {
+      arSystem.unpause(); // unpause AR and video
+    });
+
+    // arReady event triggered when ready
+    sceneEl.addEventListener("arReady", (event) => {
+      // console.log("MindAR is ready")
+    });
+
+    // arError event triggered when something went wrong. Mostly browser compatbility issue
+    sceneEl.addEventListener("arError", (event) => {
+      // console.log("MindAR failed to start")
+    });
+
+    // detect target found
+    exampleTarget.addEventListener("targetFound", event => {
+      document.querySelector("#alhambraModel").play();
+      console.log("target found");
+    });
+
+    // detect target lost
+    exampleTarget.addEventListener("targetLost", event => {
+      document.querySelector("#alhambraModel").pause();
+      console.log("target lost");
+    });
+
+    // detect click event
+    examplePlane.addEventListener("click", event => {
+      console.log("plane click");
+    });
+      });
+    </script>
+  
+</head>
+  
+<body>
+
+  <div style="position: absolute; z-index: 1000">
+    <button id="example-start-button">Start</button>
+    <button id="example-pause-button">Pause</button>
+    <button id="example-pause-keep-video-button">Pause (keep video)</button>
+    <button id="example-unpause-button">UnPause</button>
+    <button id="example-stop-button">Stop</button>
+  </div>
+
+
     <a-scene mindar-image="imageTargetSrc: targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       <a-assets>
         <img id="card" src="alhambra_alpha.png"/>
@@ -17,9 +88,9 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-entity mindar-video-target="name: outside; video: #alhambraModel;" geometry="primitive: plane; height: 0.284; width: 1;"></a-entity>
+        <!--<a-entity mindar-video-target="name: outside; video: #alhambraModel;" geometry="primitive: plane; height: 0.284; width: 1;"></a-entity>-->
         <!--<a-video id="alhambra_video" autoplay loop muted playsinline webkit-playsinline type="video/mp4" src="alhambra_chroma_small.mp4" position="0 0 0" rotation="0 0 0" height="0.2840" width="1" preload="auto" autoplay="true" loop="true" muted="true"></a-video>-->
-        <!--<a-video autoplay loop muted playsinline webkit-playsinline src="#alhambraModel" position="0 0 0" height="0.2840" width="1" rotation="0 0 0" preload="auto" autoplay="true" loop="true"> </a-video>-->
+        <a-video class="clickable" autoplay loop muted playsinline webkit-playsinline src="#alhambraModel" position="0 0 0" height="0.2840" width="1" rotation="0 0 0" preload="auto" autoplay="true" loop="true"> </a-video>
       </a-entity>
     </a-scene>
   </body>
